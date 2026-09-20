@@ -1,10 +1,28 @@
 # RedisLab
 
+[![Java 26](https://img.shields.io/badge/Java-26-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Docker](https://img.shields.io/badge/Docker-required-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Redis](https://img.shields.io/badge/Redis-internals-DC382D?logo=redis&logoColor=white)](https://redis.io/)
+
 RedisLab is a practical Redis internals laboratory built with Spring Boot,
 Spring Data Redis, Java 26, Maven, and Docker. It is intentionally not a CRUD
 business application. Each phase exposes Redis behavior directly through CLI
 commands, typed Spring Data Redis APIs, HTTP demonstrations, Docker
 topologies, tests, and failure simulations.
+
+The goal is to make Redis behavior observable: run a command, inspect the
+result, reproduce a failure, and compare the implementation trade-offs rather
+than relying on mocked examples or undocumented assumptions.
+
+**Repository:** [github.com/SunilMaurya-18/redis-lab](https://github.com/SunilMaurya-18/redis-lab)
+
+## Why this project?
+
+Redis is often introduced as a fast key-value store, but production behavior
+depends on details such as atomicity, expiry, consumer-group recovery, client
+routing, persistence, and failure handling. RedisLab is a focused learning and
+portfolio project for exploring those details in a runnable environment.
 
 ## What is implemented
 
@@ -29,8 +47,8 @@ routing, multi-key design, Lua key rules, transactions, and pipelines.
 
 ## Browser operations console
 
-RedisLab also includes a zero-dependency GUI served by Spring Boot. Start the
-application, then open `http://localhost:8081/`. It provides:
+RedisLab includes a zero-dependency browser console served by Spring Boot. Start
+the application, then open `http://localhost:8081/`. It provides:
 
 - a PowerShell-style command runner (`PING`, `SET`, `GET`, `HSET`, `LPUSH`,
   `SADD`, `ZADD`, Streams, locks, rate limits, diagnostics, pipelines, and
@@ -45,10 +63,23 @@ application, then open `http://localhost:8081/`. It provides:
 For a short demonstration, click **Run smoke test** on Overview, then create a
 Stream group, add an event, read it, inspect Pending, and acknowledge its ID.
 
+The console is intended for local exploration and demonstrations; it is not a
+production administration panel.
+
+For a terminal-only recording, start the interactive short-command console:
+
+```powershell
+.\scripts\recording-console.ps1
+```
+
+Then type commands such as `ping`, `set demo hello`, `get demo`,
+`stream-add events created hello`, `pending events workers`, `burst demo`, and
+`bench`. Type `help` inside the console for the full list.
+
 ## Architecture
 
 ```text
-HTTP controllers / PowerShell scripts / redis-cli
+Browser console / HTTP controllers / PowerShell scripts / redis-cli
                          |
                  RedisLab services
                          |
@@ -66,21 +97,23 @@ implementation mapping.
 - Docker Desktop with the Linux engine running
 - Windows PowerShell
 
-The current verification host had JDK 25, so local verification used a
-temporary Maven compiler override to release 25. The project remains declared
-for Java 26 and should be built normally with JDK 26.
+The project is configured for Java 26. Use JDK 26 for a normal build; an older
+JDK will fail during compilation because the declared release is 26.
 
-## Run the development topology
+## Quick start
 
-From the actual Maven project directory:
+Clone the repository and start the development topology:
 
 ```powershell
+git clone https://github.com/SunilMaurya-18/redis-lab.git
+cd redis-lab
 docker compose up -d
 .\mvnw.cmd clean compile
 .\mvnw.cmd spring-boot:run
 ```
 
-The API listens on `http://localhost:8081`.
+Open the browser console at [http://localhost:8081](http://localhost:8081).
+The API also listens on port `8081`.
 
 The Maven wrapper includes a PowerShell compatibility fix for ordinary
 directories under `.m2`. If Docker is unavailable, application-context tests
@@ -209,24 +242,4 @@ payload size, warm-up, batch size, and Redis state. See
 - Docker examples are learning environments. Production deployments need
   secret management, ACLs, TLS, backups, resource sizing, monitoring, and an
   explicit failover strategy.
-
-# RedisLab
-
-RedisLab now includes a browser-based operations console for exercising the Redis examples without Postman or a second terminal.
-
-## GUI console
-
-Start Redis and the Spring Boot application, then open:
-
-```text
-http://localhost:8081/
-```
-
-The console provides:
-
-- a PowerShell-style command runner (`PING`, `SET`, `GET`, `HSET`, `LPUSH`, `SADD`, `ZADD`, Streams, locks, rate limits, diagnostics, pipelines, and benchmarks);
-- guided forms for data structures, Streams and consumer groups, distributed locks, rate limiting, diagnostics, and benchmarks;
-- structured JSON responses, command history, quick actions, and a connection/memory status view;
-- no frontend build or internet dependency: the UI is served from `src/main/resources/static` by Spring Boot.
-
-For a short demo, click **Run smoke test** on the Overview page, then open **Streams & groups**, create a group, add an event, read it, inspect Pending, and acknowledge the returned record ID.
+ 
