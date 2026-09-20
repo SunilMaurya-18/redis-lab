@@ -75,7 +75,6 @@ for Java 26 and should be built normally with JDK 26.
 From the actual Maven project directory:
 
 ```powershell
-cd C:\Users\SUNIL\Downloads\redis-lab\redis-lab
 docker compose up -d
 .\mvnw.cmd clean compile
 .\mvnw.cmd spring-boot:run
