@@ -13,11 +13,9 @@ import java.util.List;
 @Service
 public class RedisPipelineService {
     private final StringRedisTemplate redisTemplate;
-
     public RedisPipelineService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
-
     public List<Object> setBatch(
             String prefix,
             int count
@@ -63,7 +61,6 @@ public class RedisPipelineService {
                 }
         );
     }
-
     public List<Object> mixedPipeline(
             String prefix
     ) {

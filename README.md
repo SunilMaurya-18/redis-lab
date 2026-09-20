@@ -1,0 +1,239 @@
+# RedisLab
+
+RedisLab is a practical Redis internals laboratory built with Spring Boot,
+Spring Data Redis, Java 26, Maven, and Docker. It is intentionally not a CRUD
+business application. Each phase exposes Redis behavior directly through CLI
+commands, typed Spring Data Redis APIs, HTTP demonstrations, Docker
+topologies, tests, and failure simulations.
+
+## What is implemented
+
+- Redis data structures: strings, hashes, lists, sets, sorted sets
+- Expiration and TTL behavior
+- Transactions, `WATCH`, pipelining, Lua, Pub/Sub, Streams
+- Streams consumer groups, PEL inspection, `XCLAIM`, `XAUTOCLAIM`
+- Token-based distributed locks with safe Lua release and renewal
+- Fixed-window rate limiting with non-atomic and Lua-atomic variants
+- HTTP `429` responses and rate-limit headers
+- Memory/key diagnostics using `SCAN`, `MEMORY`, `OBJECT`, `TYPE`, and TTLs
+- Real Redis benchmarks with warm-up, repeated samples, throughput, p50, p95, and p99
+- RDB/AOF persistence Docker demonstrations
+- Primary/replica Docker topology
+- Six-node Redis Cluster Docker topology
+- Validation tests and PowerShell failure simulations
+- Development and production-like Docker configurations
+
+The Java application is intentionally single-node by default. Cluster-aware
+deployment is demonstrated separately because Redis Cluster changes client
+routing, multi-key design, Lua key rules, transactions, and pipelines.
+
+## Browser operations console
+
+RedisLab also includes a zero-dependency GUI served by Spring Boot. Start the
+application, then open `http://localhost:8081/`. It provides:
+
+- a PowerShell-style command runner (`PING`, `SET`, `GET`, `HSET`, `LPUSH`,
+  `SADD`, `ZADD`, Streams, locks, rate limits, diagnostics, pipelines, and
+  benchmarks);
+- guided forms for data structures, Streams and consumer groups, distributed
+  locks, rate limiting, diagnostics, and benchmarks;
+- structured JSON responses, command history, quick actions, and connection
+  and memory status;
+- no frontend build or internet dependency; the files live in
+  `src/main/resources/static`.
+
+For a short demonstration, click **Run smoke test** on Overview, then create a
+Stream group, add an event, read it, inspect Pending, and acknowledge its ID.
+
+## Architecture
+
+```text
+HTTP controllers / PowerShell scripts / redis-cli
+                         |
+                 RedisLab services
+                         |
+              StringRedisTemplate / RedisConnection
+                         |
+      Redis standalone, replica topology, or cluster topology
+```
+
+See [docs/architecture.md](docs/architecture.md) for the command-to-API-to-
+implementation mapping.
+
+## Requirements
+
+- JDK 26 for the declared project configuration
+- Docker Desktop with the Linux engine running
+- Windows PowerShell
+
+The current verification host had JDK 25, so local verification used a
+temporary Maven compiler override to release 25. The project remains declared
+for Java 26 and should be built normally with JDK 26.
+
+## Run the development topology
+
+From the actual Maven project directory:
+
+```powershell
+cd C:\Users\SUNIL\Downloads\redis-lab\redis-lab
+docker compose up -d
+.\mvnw.cmd clean compile
+.\mvnw.cmd spring-boot:run
+```
+
+The API listens on `http://localhost:8081`.
+
+The Maven wrapper includes a PowerShell compatibility fix for ordinary
+directories under `.m2`. If Docker is unavailable, application-context tests
+disable only the Pub/Sub listener; live Redis operations still require Redis.
+
+## Useful endpoints
+
+```text
+POST /api/v1/redis/locks/try
+POST /api/v1/redis/locks/release
+POST /api/v1/redis/locks/renew
+
+POST /api/v1/redis/rate-limits/simple
+POST /api/v1/redis/rate-limits/atomic
+GET  /api/v1/limited/resource
+
+GET  /api/v1/redis/diagnostics/key
+GET  /api/v1/redis/diagnostics/memory
+GET  /api/v1/redis/diagnostics/scan
+GET  /api/v1/redis/diagnostics/analyze
+
+POST /api/v1/redis/benchmarks/run
+
+POST /api/v1/redis/stream-groups/create
+GET  /api/v1/redis/stream-groups/read
+POST /api/v1/redis/stream-groups/ack
+GET  /api/v1/redis/stream-groups/pending
+POST /api/v1/redis/stream-groups/claim
+POST /api/v1/redis/stream-groups/autoclaim
+```
+
+## Consumer-group quick start
+
+```powershell
+$base = "http://localhost:8081/api/v1/redis/stream-groups"
+$stream = "redislab:events"
+$group = "workers"
+
+Invoke-RestMethod "$base/create?stream=$stream&group=$group&startId=0-0" -Method Post
+Invoke-RestMethod "$base/add?stream=$stream&eventType=order.created&payload=order-1" -Method Post
+Invoke-RestMethod "$base/read?stream=$stream&group=$group&consumer=consumer-a&offset=%3E&count=10" -Method Get
+Invoke-RestMethod "$base/pending/summary?stream=$stream&group=$group" -Method Get
+```
+
+Use `offset=0-0` to inspect messages pending for the current consumer and
+`XAUTOCLAIM`/the `/autoclaim` endpoint to recover idle messages from a failed
+consumer.
+
+## Docker demonstrations
+
+```powershell
+docker compose -f docker-compose.persistence.yml up -d
+docker compose -f docker-compose.replication.yml up -d
+docker compose -f docker-compose.cluster.yml up -d
+Copy-Item .env.example .env
+docker compose -f docker-compose.production.yml up -d
+```
+
+Run the demonstrations:
+
+```powershell
+.\scripts\persistence-demo.ps1
+.\scripts\replication-demo.ps1
+.\scripts\cluster-smoke.ps1
+.\scripts\failure-simulation.ps1
+```
+
+Stop a topology before starting another if host ports overlap. The replication
+setup does not configure Sentinel or automatic failover. The cluster setup is
+for local learning and is not a production security configuration.
+
+## Testing
+
+```powershell
+.\mvnw.cmd test
+```
+
+The test suite includes application-context verification and validation tests
+for locks, rate limits, diagnostics, and benchmarks. Live Redis integration
+scenarios are reproducible with the Docker and PowerShell scripts so that
+consumer crashes, stale locks, replication state, persistence, and cluster
+routing are visible rather than mocked away.
+
+## Benchmarking
+
+The benchmark endpoint performs real operations against the configured Redis
+instance and reports measured values only:
+
+```powershell
+Invoke-RestMethod `
+  "http://localhost:8081/api/v1/redis/benchmarks/run?warmupIterations=100&measuredIterations=1000&batchSize=100" `
+  -Method Post
+```
+
+Compare individual commands, pipelines, MSET/MGET, and Lua using the same host,
+payload size, warm-up, batch size, and Redis state. See
+[docs/benchmarking.md](docs/benchmarking.md).
+
+## Roadmap
+
+| Phase | Topic | Status |
+|---:|---|---|
+| 0–12 | Fundamentals through Streams | Complete |
+| 13 | Streams Consumer Groups | Complete |
+| 14 | Distributed Locks | Implemented |
+| 15 | Rate Limiting | Implemented |
+| 16 | Memory & Key Analysis | Implemented |
+| 17 | Performance Benchmarking | Implemented |
+| 18 | Persistence | Docker demonstration implemented |
+| 19 | Replication | Docker primary/replica implemented |
+| 20 | Redis Cluster | Six-node Docker demonstration implemented |
+| 21 | Testing & Failure Simulation | Tests and scripts implemented |
+| 22 | Docker & Production Setup | Development and production-like configs implemented |
+| 23 | Documentation & Portfolio | This README and docs implemented |
+
+## Limitations stated deliberately
+
+- The default Java client is not cluster-aware; use a cluster-capable client and
+  topology configuration before targeting Redis Cluster.
+- A single Redis lock is not a consensus system and cannot guarantee safety
+  across every network partition. Redlock is discussed as a design trade-off,
+  not silently enabled.
+- Rate limiting implements fixed windows. Sliding-window and token-bucket
+  algorithms are documented as designs to compare, not claimed as code that is
+  absent.
+- Docker examples are learning environments. Production deployments need
+  secret management, ACLs, TLS, backups, resource sizing, monitoring, and an
+  explicit failover strategy.
+
+## Portfolio summary
+
+RedisLab demonstrates practical Redis internals, typed Spring Data Redis usage,
+atomic Lua operations, concurrency control, failure recovery, observability,
+performance measurement, persistence, replication, clustering, Docker, and
+reliability testing without exaggerating the deployed guarantees.
+# RedisLab
+
+RedisLab now includes a browser-based operations console for exercising the Redis examples without Postman or a second terminal.
+
+## GUI console
+
+Start Redis and the Spring Boot application, then open:
+
+```text
+http://localhost:8081/
+```
+
+The console provides:
+
+- a PowerShell-style command runner (`PING`, `SET`, `GET`, `HSET`, `LPUSH`, `SADD`, `ZADD`, Streams, locks, rate limits, diagnostics, pipelines, and benchmarks);
+- guided forms for data structures, Streams and consumer groups, distributed locks, rate limiting, diagnostics, and benchmarks;
+- structured JSON responses, command history, quick actions, and a connection/memory status view;
+- no frontend build or internet dependency: the UI is served from `src/main/resources/static` by Spring Boot.
+
+For a short demo, click **Run smoke test** on the Overview page, then open **Streams & groups**, create a group, add an event, read it, inspect Pending, and acknowledge the returned record ID.

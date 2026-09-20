@@ -1,0 +1,32 @@
+services:
+  redis-rdb:
+    image: redis:8
+    container_name: redis-lab-rdb
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_rdb_data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-aof:
+    image: redis:8
+    container_name: redis-lab-aof
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_aof_data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "yes", "--appendfsync", "everysec"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  redis_rdb_data:
+  redis_aof_data:

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1220">
+    <title>RedisLab Console</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark"><span></span><span></span><span></span></div>
+            <div>
+                <div class="brand-name">RedisLab</div>
+                <div class="brand-subtitle">operations console</div>
+            </div>
+        </div>
+
+        <div class="connection-chip">
+            <span class="status-dot" id="sidebarStatusDot"></span>
+            <div>
+                <strong id="sidebarStatus">Checking Redis</strong>
+                <small>localhost:6379</small>
+            </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Primary navigation">
+            <button class="nav-item active" data-section="overview"><span class="nav-icon">⌂</span>Overview</button>
+            <button class="nav-item" data-section="console"><span class="nav-icon">›_</span>Command console</button>
+            <button class="nav-item" data-section="data-lab"><span class="nav-icon">◈</span>Data structures</button>
+            <button class="nav-item" data-section="streams"><span class="nav-icon">⇄</span>Streams &amp; groups</button>
+            <button class="nav-item" data-section="safety"><span class="nav-icon">◇</span>Locks &amp; limits</button>
+            <button class="nav-item" data-section="observability"><span class="nav-icon">◌</span>Diagnostics</button>
+            <button class="nav-item" data-section="benchmarks"><span class="nav-icon">↗</span>Benchmarks</button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="version-label">REDISLAB WORKSPACE</div>
+            <div class="api-label"><span class="tiny-dot"></span>Spring Boot API · 8081</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <div class="eyebrow">REDIS ENGINEERING WORKBENCH</div>
+                <h1 id="pageTitle">Overview</h1>
+            </div>
+            <div class="topbar-actions">
+                <span class="last-action" id="lastAction">Ready for a Redis operation</span>
+                <button class="ghost-button" id="refreshStatusBtn">↻ Refresh</button>
+                <button class="primary-button" id="clearConsoleBtn">Clear output</button>
+            </div>
+        </header>
+
+        <div id="toast" class="toast" role="status"></div>
+
+        <section class="section-view active" id="section-overview">
+            <div class="hero-card">
+                <div class="hero-copy">
+                    <div class="pill pill-green"><span class="pulse"></span> LIVE CONTROL PLANE</div>
+                    <h2>Explore Redis with<br><em>visible operations.</em></h2>
+                    <p>Run commands, inspect responses, and demonstrate production patterns from one local console.</p>
+                    <div class="hero-actions">
+                        <button class="primary-button" data-goto="console">Open command console <span>→</span></button>
+                        <button class="secondary-button" id="runSmokeBtn">Run smoke test</button>
+                    </div>
+                </div>
+                <div class="hero-terminal" aria-label="Console preview">
+                    <div class="terminal-top"><span></span><span></span><span></span><label>redislab://local</label></div>
+                    <div class="terminal-body">
+                        <div><b class="prompt">redis&gt;</b> PING</div>
+                        <div class="terminal-result">"PONG" <span class="terminal-ok">✓ connected</span></div>
+                        <div><b class="prompt">redis&gt;</b> XREADGROUP video-workers</div>
+                        <div class="terminal-result">2 messages delivered <span class="terminal-ok">✓ at-least-once</span></div>
+                        <div><b class="prompt">redis&gt;</b> INFO memory</div>
+                        <div class="terminal-result muted">ready for your command<span class="cursor"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <article class="metric-card">
+                    <div class="metric-label">CONNECTION</div>
+                    <div class="metric-value" id="metricConnection">—</div>
+                    <div class="metric-note" id="metricConnectionNote">Checking endpoint</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-label">MEMORY USED</div>
+                    <div class="metric-value" id="metricMemory">—</div>
+                    <div class="metric-note" id="metricMemoryNote">Click refresh to inspect</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-label">SUPPORTED LABS</div>
+                    <div class="metric-value">07</div>
+                    <div class="metric-note">Data · streams · safety</div>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-label">SESSION COMMANDS</div>
+                    <div class="metric-value" id="metricCommands">00</div>
+                    <div class="metric-note">Operations this session</div>
+                </article>
+            </div>
+
+            <div class="overview-grid">
+                <article class="panel quick-panel">
+                    <div class="panel-heading"><div><div class="panel-kicker">QUICK START</div><h3>Showcase RedisLab</h3></div><span class="panel-symbol">✦</span></div>
+                    <div class="quick-actions">
+                        <button class="quick-action" data-command="PING"><span class="quick-icon cyan">⌁</span><span><b>Ping Redis</b><small>Connection health</small></span><i>→</i></button>
+                        <button class="quick-action" data-command="MEMORY"><span class="quick-icon violet">◌</span><span><b>Inspect memory</b><small>Server metrics</small></span><i>→</i></button>
+                        <button class="quick-action" data-command="XADD redislab:demo video.created hello"><span class="quick-icon orange">⇄</span><span><b>Add stream event</b><small>Event delivery</small></span><i>→</i></button>
+                        <button class="quick-action" data-command="BENCHMARK"><span class="quick-icon green">↗</span><span><b>Run benchmark</b><small>Pipeline comparison</small></span><i>→</i></button>
+                    </div>
+                </article>
+                <article class="panel guide-panel">
+                    <div class="panel-heading"><div><div class="panel-kicker">DEMO PATH</div><h3>Four moments to record</h3></div><span class="panel-symbol">01—04</span></div>
+                    <div class="demo-path">
+                        <div><strong>01</strong><span><b>Connect</b><small>Show PING and Redis health.</small></span></div>
+                        <div><strong>02</strong><span><b>Operate</b><small>Set data and read it back.</small></span></div>
+                        <div><strong>03</strong><span><b>Recover</b><small>Use consumer groups and ACK.</small></span></div>
+                        <div><strong>04</strong><span><b>Measure</b><small>Inspect memory and latency.</small></span></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-view" id="section-console">
+            <div class="section-intro"><div><div class="eyebrow">DIRECT EXECUTION</div><h2>Command console</h2><p>A guided Redis-like shell mapped to RedisLab’s REST operations.</p></div><span class="section-badge">POWER-SHELL STYLE</span></div>
+            <article class="console-panel panel">
+                <div class="console-toolbar"><span class="toolbar-label"><span class="pulse"></span> local session</span><button class="mini-button" id="copyOutputBtn">Copy output</button></div>
+                <div class="console-output" id="consoleOutput" aria-live="polite">
+                    <div class="console-line system-line"><span>RedisLab Console 1.0</span> <span class="muted">· type HELP to see available commands</span></div>
+                    <div class="console-line system-line"><span>API target</span> <span class="muted">· same origin /api</span></div>
+                </div>
+                <form class="command-form" id="commandForm">
+                    <span class="command-prompt">redis&gt;</span>
+                    <input id="commandInput" autocomplete="off" spellcheck="false" placeholder="PING, SET key value, XADD stream type payload…">
+                    <button class="primary-button" type="submit">Run <span>↵</span></button>
+                </form>
+                <div class="command-hints"><button data-fill="HELP">HELP</button><button data-fill="PING">PING</button><button data-fill="SET redislab:demo hello world">SET</button><button data-fill="GET redislab:demo">GET</button><button data-fill="XADD redislab:demo demo hello">XADD</button><button data-fill="MEMORY">MEMORY</button></div>
+            </article>
+            <div class="command-reference panel">
+                <div class="panel-heading"><div><div class="panel-kicker">COMMAND REFERENCE</div><h3>Available shortcuts</h3></div></div>
+                <div class="reference-grid">
+                    <code><b>SET</b> key value</code><code><b>GET</b> key</code><code><b>DEL</b> key</code><code><b>TTL</b> key</code>
+                    <code><b>HSET</b> key field value</code><code><b>HGET</b> key field</code><code><b>LPUSH</b> key value</code><code><b>LRANGE</b> key 0 -1</code>
+                    <code><b>SADD</b> key member</code><code><b>SMEMBERS</b> key</code><code><b>ZADD</b> key score member</code><code><b>ZCARD</b> key</code>
+                    <code><b>XADD</b> stream type payload</code><code><b>XREAD</b> stream group consumer</code><code><b>LOCK TRY</b> key owner ttlMs</code><code><b>RATE LIMIT</b> scope limit windowMs</code>
+                    <code><b>EXPIRE</b> key seconds</code><code><b>PUBLISH</b> channel message</code><code><b>TXSET</b> key1 value1 key2 value2</code><code><b>LUA INCR</b> key amount</code>
+                    <code><b>MEMORY</b></code><code><b>SCAN</b> pattern</code><code><b>ANALYZE</b> pattern</code><code><b>BENCHMARK</b></code>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-view" id="section-data-lab">
+            <div class="section-intro"><div><div class="eyebrow">CORE REDIS PRIMITIVES</div><h2>Data structures</h2><p>Use the visual controls or switch to the console for the same operations.</p></div><span class="section-badge">STRINGS · HASHES · LISTS · SETS · ZSETS</span></div>
+            <article class="panel form-panel">
+                <div class="form-panel-head"><div><div class="panel-kicker">OPERATION BUILDER</div><h3>Execute a data operation</h3></div><span class="operation-chip" id="operationChip">STRING</span></div>
+                <div class="field-grid two-col">
+                    <label>Structure<select id="dataStructure"><option value="string">String</option><option value="hash">Hash</option><option value="list">List</option><option value="set">Set</option><option value="zset">Sorted set</option></select></label>
+                    <label>Operation<select id="dataOperation"></select></label>
+                    <label>Key<input id="dataKey" value="redislab:demo"></label>
+                    <label id="dataFieldLabel">Value<input id="dataValue" value="hello redis"></label>
+                    <label class="optional-field" id="dataExtraLabel">Extra<input id="dataExtra" placeholder="field / score / end"></label>
+                </div>
+                <div class="form-actions"><button class="primary-button" id="runDataBtn">Execute operation <span>→</span></button><span class="form-help" id="dataHelp">Try SET, then GET the same key.</span></div>
+            </article>
+            <div class="two-panels">
+                <article class="panel"><div class="panel-heading"><div><div class="panel-kicker">EXPIRATION</div><h3>Time-to-live</h3></div><span class="panel-symbol">◷</span></div><div class="inline-form"><label>Key<input id="ttlKey" value="redislab:demo"></label><button class="secondary-button" id="readTtlBtn">Read TTL</button></div><div class="result-strip" id="ttlResult">TTL result will appear here.</div></article>
+                <article class="panel"><div class="panel-heading"><div><div class="panel-kicker">PIPELINING</div><h3>Batch operations</h3></div><span class="panel-symbol">⇉</span></div><div class="inline-form"><label>Prefix<input id="pipelinePrefix" value="redislab:batch"></label><label>Count<input id="pipelineCount" type="number" min="1" value="20"></label><button class="secondary-button" id="runPipelineBtn">Run pipeline</button></div><div class="result-strip" id="pipelineResult">Compare batched Redis calls here.</div></article>
+            </div>
+        </section>
+
+        <section class="section-view" id="section-streams">
+            <div class="section-intro"><div><div class="eyebrow">EVENT DELIVERY</div><h2>Streams &amp; consumer groups</h2><p>Make pending entries, acknowledge work, and demonstrate recovery.</p></div><span class="section-badge">XADD · XREADGROUP · XACK · XAUTOCLAIM</span></div>
+            <article class="panel form-panel">
+                <div class="form-panel-head"><div><div class="panel-kicker">STREAM WORKBENCH</div><h3>Run a stream operation</h3></div><span class="operation-chip orange-chip" id="streamChip">ADD EVENT</span></div>
+                <div class="field-grid two-col">
+                    <label>Action<select id="streamOperation"><option value="create">Create group</option><option value="add">Add event</option><option value="read">Read new messages</option><option value="pending">Pending summary</option><option value="ack">Acknowledge ID</option><option value="autoclaim">Auto-claim idle</option><option value="groups">List groups</option><option value="consumers">List consumers</option></select></label>
+                    <label>Stream<input id="streamKey" value="redislab:demo"></label>
+                    <label>Group<input id="streamGroup" value="video-workers"></label>
+                    <label>Consumer<input id="streamConsumer" value="console-consumer"></label>
+                    <label>Event type<input id="streamEventType" value="video.created"></label>
+                    <label>Payload / record ID<input id="streamPayload" value="hello from GUI"></label>
+                </div>
+                <div class="form-actions"><button class="primary-button" id="runStreamBtn">Execute stream action <span>→</span></button><span class="form-help">Read new messages first, then use Pending and ACK to show delivery state.</span></div>
+            </article>
+            <div class="stream-flow"><div><span class="flow-number">01</span><b>XADD</b><small>Produce</small></div><i>→</i><div><span class="flow-number">02</span><b>XREADGROUP</b><small>Deliver</small></div><i>→</i><div><span class="flow-number">03</span><b>XPENDING</b><small>Inspect</small></div><i>→</i><div><span class="flow-number">04</span><b>XACK</b><small>Complete</small></div><i>→</i><div><span class="flow-number">05</span><b>XAUTOCLAIM</b><small>Recover</small></div></div>
+        </section>
+
+        <section class="section-view" id="section-safety">
+            <div class="section-intro"><div><div class="eyebrow">COORDINATION &amp; PROTECTION</div><h2>Locks &amp; rate limits</h2><p>Exercise token ownership, safe release, and atomic request throttling.</p></div><span class="section-badge">SET NX PX · LUA · ATOMIC WINDOW</span></div>
+            <div class="two-panels safety-grid">
+                <article class="panel form-panel"><div class="form-panel-head"><div><div class="panel-kicker">DISTRIBUTED LOCK</div><h3>Lock lifecycle</h3></div><span class="panel-symbol">◇</span></div><div class="field-grid"><label>Key<input id="lockKey" value="redislab:demo:lock"></label><label>Owner<input id="lockOwner" value="console-owner"></label><label>TTL (ms)<input id="lockTtl" type="number" value="10000"></label><label>Token (for release/renew)<input id="lockToken" placeholder="returned after TRY"></label></div><div class="button-row"><button class="primary-button" data-lock-action="try">Try lock</button><button class="secondary-button" data-lock-action="ttl">Read TTL</button><button class="secondary-button" data-lock-action="release">Release</button><button class="secondary-button" data-lock-action="renew">Renew</button></div><div class="result-strip" id="lockResult">A token is required for ownership-safe release.</div></article>
+                <article class="panel form-panel"><div class="form-panel-head"><div><div class="panel-kicker">ATOMIC FIXED WINDOW</div><h3>Rate limit tester</h3></div><span class="panel-symbol">▥</span></div><div class="field-grid"><label>Scope<input id="rateScope" value="video-demo"></label><label>Limit<input id="rateLimit" type="number" value="5"></label><label>Window (ms)<input id="rateWindow" type="number" value="60000"></label></div><div class="button-row"><button class="primary-button" id="runRateBtn">Consume one request</button><button class="secondary-button" id="burstRateBtn">Send burst × 6</button></div><div class="result-strip" id="rateResult">Responses include allowed, remaining, and reset-after.</div></article>
+            </div>
+        </section>
+
+        <section class="section-view" id="section-observability">
+            <div class="section-intro"><div><div class="eyebrow">OPERATIONS VISIBILITY</div><h2>Diagnostics</h2><p>Inspect Redis memory and scan keys safely without using KEYS in production.</p></div><span class="section-badge">SCAN-FIRST</span></div>
+            <div class="two-panels">
+                <article class="panel form-panel"><div class="form-panel-head"><div><div class="panel-kicker">SERVER INFO</div><h3>Memory report</h3></div><span class="panel-symbol">◌</span></div><p class="panel-copy">Read allocator, peak, fragmentation, and total system memory from Redis INFO.</p><button class="primary-button" id="runMemoryBtn">Inspect memory <span>→</span></button><div class="result-strip large-result" id="memoryResult">No report loaded.</div></article>
+                <article class="panel form-panel"><div class="form-panel-head"><div><div class="panel-kicker">KEYSPACE EXPLORER</div><h3>Scan and analyze</h3></div><span class="panel-symbol">⌕</span></div><label>Pattern<input id="scanPattern" value="redislab:*"></label><div class="button-row"><button class="primary-button" id="runScanBtn">SCAN keys</button><button class="secondary-button" id="runAnalyzeBtn">Analyze keys</button></div><div class="result-strip large-result" id="scanResult">Use a pattern such as redislab:*.</div></article>
+            </div>
+            <article class="panel response-panel"><div class="panel-heading"><div><div class="panel-kicker">LAST RESPONSE</div><h3>Structured output</h3></div><button class="mini-button" id="copyResponseBtn">Copy JSON</button></div><pre id="responseViewer">{
+  "status": "waiting",
+  "message": "Run an operation to inspect its JSON response"
+}</pre></article>
+        </section>
+
+        <section class="section-view" id="section-benchmarks">
+            <div class="section-intro"><div><div class="eyebrow">PERFORMANCE LAB</div><h2>Benchmarks</h2><p>Compare individual calls, pipelining, MSET/MGET, and Lua using the server-side benchmark service.</p></div><span class="section-badge">P50 · P95 · P99</span></div>
+            <article class="panel form-panel benchmark-form"><div class="form-panel-head"><div><div class="panel-kicker">BENCHMARK RUNNER</div><h3>Measure the current Redis instance</h3></div><span class="panel-symbol">↗</span></div><div class="field-grid four-col"><label>Key prefix<input id="benchmarkPrefix" value="redislab:gui:benchmark"></label><label>Warmup<input id="benchmarkWarmup" type="number" value="10" min="0"></label><label>Measured<input id="benchmarkMeasured" type="number" value="50" min="1"></label><label>Batch size<input id="benchmarkBatch" type="number" value="20" min="1"></label></div><div class="form-actions"><button class="primary-button" id="runBenchmarkBtn">Run benchmark <span>→</span></button><span class="form-help">Use smaller values for a quick recorded demo.</span></div></article>
+            <div class="benchmark-results" id="benchmarkResults"><div class="empty-state"><span>↗</span><h3>No benchmark run yet</h3><p>Run a measurement to populate latency cards and raw JSON.</p></div></div>
+        </section>
+    </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

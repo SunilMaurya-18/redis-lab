@@ -1,0 +1,22 @@
+services:
+  redis:
+    image: redis:8
+    container_name: redis-lab-production
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    volumes:
+      - redis_production_data:/data
+      - ./docker/redis/production.conf:/usr/local/etc/redis/production.conf:ro
+    command: ["sh", "-c", "redis-server /usr/local/etc/redis/production.conf --requirepass \"$$REDIS_PASSWORD\""]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 512m
+
+volumes:
+  redis_production_data:

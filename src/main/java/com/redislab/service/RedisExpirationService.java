@@ -13,7 +13,7 @@ public class RedisExpirationService {
     private final StringRedisTemplate redisTemplate;
     private final ValueOperations<String, String> valueOperations;
 
-    public RedisExpirationService(StringRedisTemplate redisTemplate, ValueOperations<String, String> valueOperations) {
+    public RedisExpirationService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
         this.valueOperations = redisTemplate.opsForValue();
     }

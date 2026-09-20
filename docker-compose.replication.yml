@@ -1,0 +1,35 @@
+services:
+  redis-primary:
+    image: redis:8
+    container_name: redis-lab-primary
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_primary_data:/data
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-replica:
+    image: redis:8
+    container_name: redis-lab-replica
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis_replica_data:/data
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+    command: ["redis-server", "--appendonly", "yes", "--replicaof", "redis-primary", "6379", "--replica-read-only", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  redis_primary_data:
+  redis_replica_data:
