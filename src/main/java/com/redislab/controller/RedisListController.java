@@ -244,7 +244,7 @@ public class RedisListController {
             @RequestParam String key,
             @RequestParam long timeoutSeconds) {
 
-        List<String> result =
+        String result =
                 redisListService.blockingPopLeft(
                         key,
                         timeoutSeconds
@@ -263,7 +263,7 @@ public class RedisListController {
             @RequestParam String key,
             @RequestParam long timeoutSeconds) {
 
-        List<String> result =
+        String result =
                 redisListService.blockingPopRight(
                         key,
                         timeoutSeconds
