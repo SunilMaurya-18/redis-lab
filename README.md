@@ -211,12 +211,6 @@ payload size, warm-up, batch size, and Redis state. See
   secret management, ACLs, TLS, backups, resource sizing, monitoring, and an
   explicit failover strategy.
 
-## Portfolio summary
-
-RedisLab demonstrates practical Redis internals, typed Spring Data Redis usage,
-atomic Lua operations, concurrency control, failure recovery, observability,
-performance measurement, persistence, replication, clustering, Docker, and
-reliability testing without exaggerating the deployed guarantees.
 # RedisLab
 
 RedisLab now includes a browser-based operations console for exercising the Redis examples without Postman or a second terminal.
